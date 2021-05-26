@@ -58,6 +58,7 @@ class Stitcher:
             file = element.attrib.get('href')
             b = Bookmark(self.currentPage, element.text, self.currentLevel+1)
             self.files.append((file, self.currentPage))
+            _logger.info(str(self.currentPage)+":"+file)            
             self.currentPage += self._get_pdf_number_of_pages(file)
         if b:
             self.bookmarks.append(b)
@@ -85,25 +86,35 @@ class Stitcher:
                 target.write("InfoKey: Title\n")
                 target.write("InfoValue: " + self.title + "\n")
 
+            self.bookmarks.sort()
+
+            bookmarks = self.bookmarks.copy()
+
             if (self._removeExistingBookmarks() != True):
                 for b in self.oldBookmarks:
-                    outer_level = self._get_level_from_page_number(b.page)
+                    outer_level = self._get_level_from_page_number(b.page+1)
                     if (self._flattenBookmarks()):
                         increment = 1
                     else:
                         increment = b.level
                     level = outer_level + increment
-                    self.bookmarks.append(Bookmark(b.page+1, b.title, level))
+                    if (b.title == '1. 180726_Committee Report on Data Protection_ clean.pdf'):
+                        print(b)
+                        print("outer leve", outer_level)
+                        print("final level", level)
+                    bookmarks.append(Bookmark(b.page+1, b.title, level))
 
-            self.bookmarks.sort()
-
-            for b in self.bookmarks:
+            bookmarks.sort()
+            for b in bookmarks:
                 self._add_bookmark(target, b.title, b.level, b.page)
 
     def _get_level_from_page_number(self, page):
+        previousBookmarkPage = self.bookmarks[0].page
         for b in self.bookmarks:
-            if (b.page >= page):
-                return b.level
+            if (b.page > page):
+                return previousBookmarkPage
+            previousBookmarkPage = b.page
+        return previousBookmarkPage
 
     def _iterate_old_bookmarks(self, pdf, startPage, bookmarks, level = 1):
         if (isinstance(bookmarks, list)):
