@@ -4,7 +4,10 @@ from .bookmark import Bookmark
 import html5lib
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import subprocess
+import tempfile
+import logging
 
+_logger = logging.getLogger(__name__)
 
 """ Main Stitcher class """
 class Stitcher:
@@ -83,9 +86,9 @@ class Stitcher:
     def _generate_concat_command(self, temp_filename):
         return ["pdftk"] + self.files + ['cat', 'output', temp_filename]
 
-    def _generate_temp_pdf(self, temp_filename):
-        self._merge(self.files, temp_filename)
-        self._parse_old_bookmarks(temp_filename)
+    def _generate_temp_pdf(self, temp_file):
+        self._merge(self.files, temp_file)
+        self._parse_old_bookmarks(temp_file)
 
     def _get_level_from_page_number(self, page):
         for b in self.bookmarks:
@@ -101,12 +104,19 @@ class Stitcher:
             b = Bookmark(pageNumber, bookmarks.title, level)
             self.oldBookmarks.append(b)
 
-    def _parse_old_bookmarks(self, filename):
-        p = PdfFileReader(open(filename, "rb"))
+    def _parse_old_bookmarks(self, file):
+        p = PdfFileReader(open(file.name, "rb"))
         self._iterate_old_bookmarks(p, p.getOutlines())
 
-    def _update_metadata(self, old_filename, metadata_file, outputBuffer):
-        subprocess.run(['java', '-jar', 'PDFtkBox.jar', old_filename, "update_info", metadata_file, 'output', outputBuffer])
+    def _update_metadata(self, old_filename, metadata_file, outputFilename):
+        currentBookmark = None
+        for b in self.bookmarks:
+            if b.level >1:
+                pass
+            else:
+                pass
+        _logger.info("Running pdftkbox")
+        subprocess.run(['java', '-jar', 'PDFtkBox.jar', old_filename, "update_info", metadata_file, 'output', outputFilename], capture_output=True)
 
     def _merge(self, paths, output):
         writer = PdfFileWriter()
@@ -115,18 +125,19 @@ class Stitcher:
             reader = PdfFileReader(open(inputFile, 'rb'))
             for page in range(1, reader.getNumPages()+1):
                 writer.addPage(reader.getPage(page - 1))
-        
-        with open(output, 'wb') as stream:
-            writer.write(stream)
+    
+        writer.write(output)
+        output.close()
 
-    def generate(self, outputBuffer, delete_temp_files = False):
-        METADATA_FILENAME = 'metadata.txt'
-        TEMP_PDF_FILENAME = 'temp.pdf'
+    def generate(self, outputFilename, cleanup = False):
+        METADATA_FILENAME = '/tmp/metadata.txt'
 
-        self._generate_temp_pdf(TEMP_PDF_FILENAME)
+        tempPdf = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
+        self._generate_temp_pdf(tempPdf)
         self._generate_metadata(METADATA_FILENAME)
-        self._update_metadata(TEMP_PDF_FILENAME, METADATA_FILENAME, outputBuffer)
+        self._update_metadata(tempPdf.name, METADATA_FILENAME, outputFilename)
 
-        if (delete_temp_files):
+        if (cleanup):
+            _logger.info("Deleting temporary files")
             os.remove(METADATA_FILENAME)
-            os.remove(TEMP_PDF_FILENAME)
+            os.remove(tempPdf.name)

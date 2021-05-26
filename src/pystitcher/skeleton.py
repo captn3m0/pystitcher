@@ -51,12 +51,9 @@ def parse_args(args):
         const=logging.INFO,
     )
 
-    parser.add_argument(
-        "--no-cleanup",
-        dest="no_cleanup",
-        help="log more things",
-        action=argparse.BooleanOptionalAction,
-    )
+    parser.add_argument('--cleanup', action=argparse.BooleanOptionalAction, default=True)
+    # parser.parse_args(['--no-cleanup'])
+
     return parser.parse_args(args)
 
 
@@ -79,7 +76,7 @@ def main(args):
     setup_logging(args.loglevel)
     _logger.info("Script ends here")
     stitcher = Stitcher(args.input)
-    stitcher.generate(args.output, not args.no_cleanup)
+    stitcher.generate(args.output, args.cleanup)
 
 def run():
     """Calls :func:`main` passing the CLI arguments extracted from :obj:`sys.argv`
