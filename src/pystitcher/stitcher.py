@@ -22,7 +22,10 @@ class Stitcher:
         os.chdir(self.dir)
 
         text = inputBuffer.read()
-        html = markdown.markdown(text,extensions=['attr_list'])
+        md = markdown.Markdown(extensions=['attr_list', 'meta'])
+        html = md.convert(text)
+        self.attributes = md.Meta
+
         document = html5lib.parseFragment(html, namespaceHTMLElements=False)
         for e in document.iter():
             self.iter(e)
@@ -50,8 +53,8 @@ class Stitcher:
         elif(tag =='a'):
             file = element.attrib.get('href')
             b = Bookmark(self.currentPage, element.text, self.currentLevel+1)
-            self.currentPage += self._get_pdf_number_of_pages(file)
             self.files.append((file, self.currentPage))
+            self.currentPage += self._get_pdf_number_of_pages(file)
         if b:
             self.bookmarks.append(b)
 
@@ -62,21 +65,35 @@ class Stitcher:
         targetFileHandle.write("BookmarkPageNumber: " + str(page) + "\n")
         targetFileHandle.write("BookmarkZoom: FitHeight\n")
 
-    def _generate_metadata(self, filename, flatten_inner_bookmarks=True):
+    def _existingBookmarkConfig(self):
+        return self.attributes.get('existing_bookmarks', ['keep'])
+
+    def _keepExistingBookmarks(self):
+        return self._existingBookmarkConfig()[0] != 'remove'
+
+    def _flattenBookmarks(self):
+        if (self._existingBookmarkConfig() == ['flatten']):
+            return True
+        return False
+
+    def _generate_metadata(self, filename):
+        if (self._flattenBookmarks()):
+            _logger.info("Bookmarks are flattened")
         with open(filename, 'w') as target:
             if (self.title):
                 target.write("InfoBegin\n")
                 target.write("InfoKey: Title\n")
                 target.write("InfoValue: " + self.title + "\n")
 
-            for b in self.oldBookmarks:
-                outer_level = self._get_level_from_page_number(b.page)
-                if (flatten_inner_bookmarks):
-                    increment = 1
-                else:
-                    increment = b.level
-                level = outer_level + increment
-                self.bookmarks.append(Bookmark(b.page+1, b.title, level))
+            if (self._keepExistingBookmarks()):
+                for b in self.oldBookmarks:
+                    outer_level = self._get_level_from_page_number(b.page)
+                    if (self._flattenBookmarks()):
+                        increment = 1
+                    else:
+                        increment = b.level
+                    level = outer_level + increment
+                    self.bookmarks.append(Bookmark(b.page+1, b.title, level))
 
             self.bookmarks.sort()
 
