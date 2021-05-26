@@ -33,8 +33,7 @@ Given this input::
 
 Will generate a PDF with proper bookmarks:
 
-![](https://i.imgur.com/qPVpZGt.png)
-
+.. image:: https://i.imgur.com/qPVpZGt.png
 
 .. _pyscaffold-notes:
 
