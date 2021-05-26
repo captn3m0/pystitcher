@@ -74,7 +74,6 @@ def main(args):
     """
     args = parse_args(args)
     setup_logging(args.loglevel)
-    _logger.info("Script ends here")
     stitcher = Stitcher(args.input)
     stitcher.generate(args.output, args.cleanup)
 

@@ -51,7 +51,7 @@ class Stitcher:
             file = element.attrib.get('href')
             b = Bookmark(self.currentPage, element.text, self.currentLevel+1)
             self.currentPage += self._get_pdf_number_of_pages(file)
-            self.files.append(file)
+            self.files.append((file, self.currentPage))
         if b:
             self.bookmarks.append(b)
 
@@ -83,11 +83,9 @@ class Stitcher:
             for b in self.bookmarks:
                 self._add_bookmark(target, b.title, b.level, b.page)
 
-    def _generate_concat_command(self, temp_filename):
-        return ["pdftk"] + self.files + ['cat', 'output', temp_filename]
-
     def _generate_temp_pdf(self, temp_file):
-        self._merge(self.files, temp_file)
+        files = [x[0] for x in self.files]
+        self._merge(files, temp_file)
         self._parse_old_bookmarks(temp_file)
 
     def _get_level_from_page_number(self, page):
@@ -130,14 +128,17 @@ class Stitcher:
         output.close()
 
     def generate(self, outputFilename, cleanup = False):
-        METADATA_FILENAME = '/tmp/metadata.txt'
 
         tempPdf = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
+        tempMetadataFile = tempfile.NamedTemporaryFile(suffix=".txt", delete=False)
+
         self._generate_temp_pdf(tempPdf)
-        self._generate_metadata(METADATA_FILENAME)
-        self._update_metadata(tempPdf.name, METADATA_FILENAME, outputFilename)
+        self._generate_metadata(tempMetadataFile.name)
+        self._update_metadata(tempPdf.name, tempMetadataFile.name, outputFilename)
 
         if (cleanup):
             _logger.info("Deleting temporary files")
-            os.remove(METADATA_FILENAME)
+            os.remove(tempMetadataFile)
             os.remove(tempPdf.name)
+        else:
+            print("Temporary files saved as ", tempPdf.name, tempMetadataFile.name)
