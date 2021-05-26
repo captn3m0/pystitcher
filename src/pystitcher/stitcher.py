@@ -83,28 +83,20 @@ class Stitcher:
             for b in self.bookmarks:
                 self._add_bookmark(target, b.title, b.level, b.page)
 
-    def _generate_temp_pdf(self, temp_file):
-        files = [x[0] for x in self.files]
-        self._merge(files, temp_file)
-        self._parse_old_bookmarks(temp_file)
-
     def _get_level_from_page_number(self, page):
         for b in self.bookmarks:
             if (b.page >= page):
                 return b.level
 
-    def _iterate_old_bookmarks(self, pdf, bookmarks, level = 1):
+    def _iterate_old_bookmarks(self, pdf, startPage, bookmarks, level = 1):
         if (isinstance(bookmarks, list)):
             for inner_bookmark in bookmarks:
-                self._iterate_old_bookmarks(pdf, inner_bookmark, level+1)
+                self._iterate_old_bookmarks(pdf, startPage, inner_bookmark, level+1)
         else:
-            pageNumber = pdf.getDestinationPageNumber(bookmarks)
-            b = Bookmark(pageNumber, bookmarks.title, level)
+            localPageNumber = pdf.getDestinationPageNumber(bookmarks)
+            globalPageNumber = startPage + localPageNumber
+            b = Bookmark(globalPageNumber, bookmarks.title, level)
             self.oldBookmarks.append(b)
-
-    def _parse_old_bookmarks(self, file):
-        p = PdfFileReader(open(file.name, "rb"))
-        self._iterate_old_bookmarks(p, p.getOutlines())
 
     def _update_metadata(self, old_filename, metadata_file, outputFilename):
         currentBookmark = None
@@ -116,11 +108,12 @@ class Stitcher:
         _logger.info("Running pdftkbox")
         subprocess.run(['java', '-jar', 'PDFtkBox.jar', old_filename, "update_info", metadata_file, 'output', outputFilename], capture_output=True)
 
-    def _merge(self, paths, output):
+    def _merge(self, output):
         writer = PdfFileWriter()
-        for inputFile in paths:
+        for (inputFile,startPage) in self.files:
             assert os.path.isfile(inputFile), ERROR_PATH.format(inputFile)
             reader = PdfFileReader(open(inputFile, 'rb'))
+            self._iterate_old_bookmarks(reader, startPage, reader.getOutlines())
             for page in range(1, reader.getNumPages()+1):
                 writer.addPage(reader.getPage(page - 1))
     
@@ -132,7 +125,7 @@ class Stitcher:
         tempPdf = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
         tempMetadataFile = tempfile.NamedTemporaryFile(suffix=".txt", delete=False)
 
-        self._generate_temp_pdf(tempPdf)
+        self._merge(tempPdf)
         self._generate_metadata(tempMetadataFile.name)
         self._update_metadata(tempPdf.name, tempMetadataFile.name, outputFilename)
 
