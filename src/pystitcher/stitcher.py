@@ -19,6 +19,7 @@ class Stitcher:
         self.currentLevel = None
         self.oldBookmarks = []
         self.dir = os.path.dirname(os.path.abspath(inputBuffer.name))
+        # TODO: This is a hack
         os.chdir(self.dir)
 
         text = inputBuffer.read()
@@ -35,6 +36,9 @@ class Stitcher:
                 "File {} doesn't exist or isn't readable".format(filename)
         pdf_reader = PdfFileReader(open(filename, "rb"))
         return pdf_reader.numPages
+
+    def _getAttribute(self, key):
+        return self.attributes.get(key, [None])[0]
 
     def iter(self, element):
         tag = element.tag
@@ -66,26 +70,22 @@ class Stitcher:
         targetFileHandle.write("BookmarkZoom: FitHeight\n")
 
     def _existingBookmarkConfig(self):
-        return self.attributes.get('existing_bookmarks', ['keep'])
+        return self._getAttribute('existing_bookmarks')
 
-    def _keepExistingBookmarks(self):
-        return self._existingBookmarkConfig()[0] != 'remove'
+    def _removeExistingBookmarks(self):
+        return (self._existingBookmarkConfig() == 'remove')
 
     def _flattenBookmarks(self):
-        if (self._existingBookmarkConfig() == ['flatten']):
-            return True
-        return False
+        return (self._existingBookmarkConfig() == 'flatten')
 
     def _generate_metadata(self, filename):
-        if (self._flattenBookmarks()):
-            _logger.info("Bookmarks are flattened")
         with open(filename, 'w') as target:
             if (self.title):
                 target.write("InfoBegin\n")
                 target.write("InfoKey: Title\n")
                 target.write("InfoValue: " + self.title + "\n")
 
-            if (self._keepExistingBookmarks()):
+            if (self._removeExistingBookmarks() != True):
                 for b in self.oldBookmarks:
                     outer_level = self._get_level_from_page_number(b.page)
                     if (self._flattenBookmarks()):
@@ -111,7 +111,7 @@ class Stitcher:
                 self._iterate_old_bookmarks(pdf, startPage, inner_bookmark, level+1)
         else:
             localPageNumber = pdf.getDestinationPageNumber(bookmarks)
-            globalPageNumber = startPage + localPageNumber
+            globalPageNumber = startPage + localPageNumber - 1
             b = Bookmark(globalPageNumber, bookmarks.title, level)
             self.oldBookmarks.append(b)
 
