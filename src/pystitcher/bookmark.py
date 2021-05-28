@@ -1,6 +1,6 @@
 """ Bookmark class """
 class Bookmark:
-    def __init__(self, page, title, level=1, fit='/FitV'):
+    def __init__(self, page, title, level=1, fit='/Fit'):
         self.page = page
         self.title = title
         self.level = level
@@ -11,7 +11,8 @@ class Bookmark:
         elif (self.fit == '/FitH' or self.fit == '/FitV' or self.fit == '/FitBH' or self.fit == '/FitBV'):
             self.cords = [(0)]
         else:
-            self.fit = '/FitB'
+            # Invalid value passed
+            self.fit = '/Fit'
             self.cords = []
 
 
