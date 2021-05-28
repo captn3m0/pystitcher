@@ -58,12 +58,12 @@ class Stitcher:
             file = element.attrib.get('href')
             b = Bookmark(self.currentPage, element.text, self.currentLevel+1)
             self.files.append((file, self.currentPage))
-            _logger.info(str(self.currentPage)+":"+file)            
+            # _logger.info("File: %s starts at %s", file, self.currentLevel)
             self.currentPage += self._get_pdf_number_of_pages(file)
         if b:
             self.bookmarks.append(b)
 
-    def _add_bookmark(self, targetFileHandle, title, level, page):
+    def _add_bookmark(self, targetFileHandle, page, title, level):
         targetFileHandle.write("BookmarkBegin\n")
         targetFileHandle.write("BookmarkTitle: " + title + "\n")
         targetFileHandle.write("BookmarkLevel: " + str(level) + "\n")
@@ -92,29 +92,35 @@ class Stitcher:
 
             if (self._removeExistingBookmarks() != True):
                 for b in self.oldBookmarks:
+                    # _logger.info("Checking for %s(%s)", b.title, b.page+1)
                     outer_level = self._get_level_from_page_number(b.page+1)
+                    # _logger.info("Got Level: %s", outer_level)
                     if (self._flattenBookmarks()):
                         increment = 1
                     else:
                         increment = b.level
-                    level = outer_level + increment
-                    if (b.title == '1. 180726_Committee Report on Data Protection_ clean.pdf'):
-                        print(b)
-                        print("outer leve", outer_level)
-                        print("final level", level)
+                    level = outer_level + increment - 1
                     bookmarks.append(Bookmark(b.page+1, b.title, level))
 
             bookmarks.sort()
+            self.bookmarks = bookmarks
+            # self._print_bookmarks()
             for b in bookmarks:
-                self._add_bookmark(target, b.title, b.level, b.page)
+                self._add_bookmark(target, b.page, b.title, b.level)
+
+    def _print_bookmarks(self):
+        for b in self.bookmarks:
+            print((" " *( b.level-1)) + b.title + "("+str(b.page)+")")
 
     def _get_level_from_page_number(self, page):
-        previousBookmarkPage = self.bookmarks[0].page
+        previousBookmarkLevel = self.bookmarks[0].level
         for b in self.bookmarks:
+            # _logger.info("testing: %s (P%s) [L%s]", b.title, b.page, b.level)
             if (b.page > page):
-                return previousBookmarkPage
-            previousBookmarkPage = b.page
-        return previousBookmarkPage
+                # _logger.info("Returning L%s", previousBookmarkLevel)
+                return previousBookmarkLevel
+            previousBookmarkLevel = b.level
+        return previousBookmarkLevel
 
     def _iterate_old_bookmarks(self, pdf, startPage, bookmarks, level = 1):
         if (isinstance(bookmarks, list)):
@@ -128,13 +134,15 @@ class Stitcher:
 
     def _update_metadata(self, old_filename, metadata_file, outputFilename):
         currentBookmark = None
-        for b in self.bookmarks:
-            if b.level >1:
-                pass
-            else:
-                pass
+        # TODO: Code to add bookmarks natively
+        # for b in self.bookmarks:
+        #     if b.level >1:
+        #         pass
+        #     else:
+        #         pass
         _logger.info("Running pdftkbox")
-        subprocess.run(['java', '-jar', 'PDFtkBox.jar', old_filename, "update_info", metadata_file, 'output', outputFilename], capture_output=True)
+        subprocess.run(['java', '-jar', '/home/nemo/apps/PDFtkBox.jar', old_filename, 
+            "update_info", metadata_file, 'output', outputFilename], capture_output=True)
 
     def _merge(self, output):
         writer = PdfFileWriter()
@@ -159,7 +167,7 @@ class Stitcher:
 
         if (cleanup):
             _logger.info("Deleting temporary files")
-            os.remove(tempMetadataFile)
+            os.remove(tempMetadataFile.name)
             os.remove(tempPdf.name)
         else:
             print("Temporary files saved as ", tempPdf.name, tempMetadataFile.name)
