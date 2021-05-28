@@ -4,6 +4,8 @@ class Bookmark:
         self.page = page
         self.title = title
         self.level = level
+        # default value for now
+        self.fit = '/FitH'
 
     def __lt__(self, other):
          return self.page < other.page

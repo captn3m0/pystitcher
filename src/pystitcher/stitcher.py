@@ -132,17 +132,28 @@ class Stitcher:
             b = Bookmark(globalPageNumber, bookmarks.title, level)
             self.oldBookmarks.append(b)
 
-    def _update_metadata(self, old_filename, metadata_file, outputFilename):
-        currentBookmark = None
-        # TODO: Code to add bookmarks natively
-        # for b in self.bookmarks:
-        #     if b.level >1:
-        #         pass
-        #     else:
-        #         pass
-        _logger.info("Running pdftkbox")
-        subprocess.run(['java', '-jar', '/home/nemo/apps/PDFtkBox.jar', old_filename, 
-            "update_info", metadata_file, 'output', outputFilename], capture_output=True)
+    """
+    Insert the bookmarks into the PDF file
+    Ref: https://stackoverflow.com/a/18867646
+    """
+    def _update_metadata(self, old_filename, outputFilename):
+        stack = []
+        pdfInput = PdfFileReader(open(old_filename, 'rb'))
+        pdfOutput = PdfFileWriter()
+        pdfOutput.cloneDocumentFromReader(pdfInput)
+        for b in self.bookmarks:
+            existingRef = None
+            # Trim the stack till the top is useful (stack.level < b.level)
+            while len(stack) > 0 and stack[len(stack)-1][0].level >= b.level:
+                stack.pop()
+            # If stack has something, use it
+            if (len(stack) > 0):
+                existingRef = stack[len(stack) - 1]
+                stack.append((b, pdfOutput.addBookmark(b.title, b.page - 1, existingRef[1])))
+            # Else, push to top
+            else:
+                stack.append((b, pdfOutput.addBookmark(b.title, b.page - 1)))
+        pdfOutput.write(open(outputFilename, 'wb'))
 
     def _merge(self, output):
         writer = PdfFileWriter()
@@ -163,7 +174,7 @@ class Stitcher:
 
         self._merge(tempPdf)
         self._generate_metadata(tempMetadataFile.name)
-        self._update_metadata(tempPdf.name, tempMetadataFile.name, outputFilename)
+        self._update_metadata(tempPdf.name, outputFilename)
 
         if (cleanup):
             _logger.info("Deleting temporary files")
