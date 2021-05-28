@@ -40,7 +40,7 @@ def parse_args(args):
         action="version",
         version="pystitcher {ver}".format(ver=__version__),
     )
-    parser.add_argument(dest="input", help="Input Spine markdown file", type=argparse.FileType('r', encoding='UTF-8'), metavar="spine.md")
+    parser.add_argument(dest="input", help="Input markdown file", type=argparse.FileType('r', encoding='UTF-8'), metavar="spine.md")
     parser.add_argument(dest="output", help="Output PDF file", type=str, metavar="output.pdf")
     parser.add_argument(
         "-v",
@@ -51,8 +51,12 @@ def parse_args(args):
         const=logging.INFO,
     )
 
-    parser.add_argument('--cleanup', action=argparse.BooleanOptionalAction, default=True)
-    # parser.parse_args(['--no-cleanup'])
+    parser.add_argument(
+        '--cleanup',
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Delete temporary files"
+    )
 
     return parser.parse_args(args)
 
