@@ -3,7 +3,6 @@ import markdown
 from .bookmark import Bookmark
 import html5lib
 from PyPDF2 import PdfFileWriter, PdfFileReader
-import subprocess
 import tempfile
 import logging
 
@@ -63,13 +62,6 @@ class Stitcher:
         if b:
             self.bookmarks.append(b)
 
-    def _add_bookmark(self, targetFileHandle, page, title, level):
-        targetFileHandle.write("BookmarkBegin\n")
-        targetFileHandle.write("BookmarkTitle: " + title + "\n")
-        targetFileHandle.write("BookmarkLevel: " + str(level) + "\n")
-        targetFileHandle.write("BookmarkPageNumber: " + str(page) + "\n")
-        targetFileHandle.write("BookmarkZoom: FitHeight\n")
-
     def _existingBookmarkConfig(self):
         return self._getAttribute('existing_bookmarks')
 
@@ -79,39 +71,32 @@ class Stitcher:
     def _flattenBookmarks(self):
         return (self._existingBookmarkConfig() == 'flatten')
 
-    def _generate_metadata(self, filename):
-        with open(filename, 'w') as target:
-            if (self.title):
-                target.write("InfoBegin\n")
-                target.write("InfoKey: Title\n")
-                target.write("InfoValue: " + self.title + "\n")
+    """
+    Adds the existing bookmarks into the 
+    self.bookmarks list
+    """
+    def _add_existing_bookmarks(self):
+        self.bookmarks.sort()
 
-            self.bookmarks.sort()
+        bookmarks = self.bookmarks.copy()
 
-            bookmarks = self.bookmarks.copy()
+        if (self._removeExistingBookmarks() != True):
+            for b in self.oldBookmarks:
+                outer_level = self._get_level_from_page_number(b.page+1)
+                if (self._flattenBookmarks()):
+                    increment = 2
+                else:
+                    increment = b.level
+                level = outer_level + increment - 1
+                bookmarks.append(Bookmark(b.page+1, b.title, level))
 
-            if (self._removeExistingBookmarks() != True):
-                for b in self.oldBookmarks:
-                    # _logger.info("Checking for %s(%s)", b.title, b.page+1)
-                    outer_level = self._get_level_from_page_number(b.page+1)
-                    # _logger.info("Got Level: %s", outer_level)
-                    if (self._flattenBookmarks()):
-                        increment = 2
-                    else:
-                        increment = b.level
-                    level = outer_level + increment - 1
-                    bookmarks.append(Bookmark(b.page+1, b.title, level))
+        bookmarks.sort()
+        self.bookmarks = bookmarks
 
-            bookmarks.sort()
-            self.bookmarks = bookmarks
-            # self._print_bookmarks()
-            for b in bookmarks:
-                self._add_bookmark(target, b.page, b.title, b.level)
-
-    def _print_bookmarks(self):
-        for b in self.bookmarks:
-            print((" " *( b.level-1)) + b.title + "("+str(b.page)+")")
-
+    """
+    Gets the last bookmkark level at a given page number
+    on the combined PDF
+    """
     def _get_level_from_page_number(self, page):
         previousBookmarkLevel = self.bookmarks[0].level
         for b in self.bookmarks:
@@ -122,6 +107,10 @@ class Stitcher:
             previousBookmarkLevel = b.level
         return previousBookmarkLevel
 
+    """
+    Recursive method to read the old bookmarks (which are nested)
+    and push them to self.oldBookmarks
+    """
     def _iterate_old_bookmarks(self, pdf, startPage, bookmarks, level = 1):
         if (isinstance(bookmarks, list)):
             for inner_bookmark in bookmarks:
@@ -135,6 +124,7 @@ class Stitcher:
     """
     Insert the bookmarks into the PDF file
     Ref: https://stackoverflow.com/a/18867646
+    # TODO: Interleave this into the merge method somehow
     """
     def _update_metadata(self, old_filename, outputFilename):
         stack = []
@@ -155,11 +145,17 @@ class Stitcher:
                 stack.append((b, pdfOutput.addBookmark(b.title, b.page - 1)))
         pdfOutput.write(open(outputFilename, 'wb'))
 
+    """
+    Merge the PDF files together in order
+    and iterate through the old bookmarks
+    as we're reading them
+    """
     def _merge(self, output):
         writer = PdfFileWriter()
         for (inputFile,startPage) in self.files:
             assert os.path.isfile(inputFile), ERROR_PATH.format(inputFile)
             reader = PdfFileReader(open(inputFile, 'rb'))
+            # Recursively iterate through the old bookmarks
             self._iterate_old_bookmarks(reader, startPage, reader.getOutlines())
             for page in range(1, reader.getNumPages()+1):
                 writer.addPage(reader.getPage(page - 1))
@@ -167,13 +163,15 @@ class Stitcher:
         writer.write(output)
         output.close()
 
+    """
+    Main entrypoint to generate the final PDF
+    """
     def generate(self, outputFilename, cleanup = False):
-
         tempPdf = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
-        tempMetadataFile = tempfile.NamedTemporaryFile(suffix=".txt", delete=False)
-
         self._merge(tempPdf)
-        self._generate_metadata(tempMetadataFile.name)
+        # Only read the additional bookmarks if we're not removing them
+        if (not self._removeExistingBookmarks())
+            self._add_existing_bookmarks()
         self._update_metadata(tempPdf.name, outputFilename)
 
         if (cleanup):
@@ -181,4 +179,5 @@ class Stitcher:
             os.remove(tempMetadataFile.name)
             os.remove(tempPdf.name)
         else:
+            # Why print? Because this is not logging, this is output
             print("Temporary files saved as ", tempPdf.name, tempMetadataFile.name)
