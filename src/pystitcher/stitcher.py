@@ -2,7 +2,7 @@ import os
 import markdown
 from .bookmark import Bookmark
 import html5lib
-from PyPDF2 import PdfFileWriter, PdfFileReader
+from PyPDF3 import PdfFileWriter, PdfFileReader
 from pystitcher import __version__
 import tempfile
 import logging

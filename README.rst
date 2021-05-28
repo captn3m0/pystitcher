@@ -2,8 +2,7 @@
 pystitcher
 ==========
 
-
-pystitcher stitches your PDF files together, generating nice customizable bookmarks for you using a declarative input file.
+pystitcher stitches your PDF files together, generating nice customizable bookmarks for you using a declarative input in the form of a markdown file. It is written in pure python and uses `PyPDF3 <https://pypi.org/project/PyPDF3/>`_ for reading and writing PDF files.
 
 
 Description
@@ -12,6 +11,10 @@ Description
 Given this input::
 
 	existing_bookmarks: flatten
+	title: Complete Guide to the Personal Data Protection Bill
+	author: Medianama
+	keywords: privacy, surveillance, personal data protection
+	subject: Personal Data Protection Bill
 	# A Complete Guide to the Personal Data Protection Bill
 
 	- [Cover](cover.pdf)
@@ -35,9 +38,16 @@ Will generate a PDF with proper bookmarks:
 
 .. image:: https://i.imgur.com/qPVpZGt.png
 
+And the correct metadata::
+
+	Title:          Complete Guide to the Personal Data Protection Bill
+	Subject:        Personal Data Protection Bill
+	Keywords:       privacy, surveillance, personal data protection
+	Author:         Medianama
+	Creator:        pystitcher/0.0.1
+	Producer:       pystitcher/0.0.1
+
 Configuration options can be specified with Meta data at the top of the file. These include:
-
-
 
 .. _pyscaffold-notes:
 
