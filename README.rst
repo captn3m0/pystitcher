@@ -8,6 +8,23 @@ pystitcher stitches your PDF files together, generating nice customizable bookma
 Description
 ===========
 
+pystitcher is a command line tool, with very few cli options::
+
+	usage: pystitcher [-h] [--version] [-v] [--cleanup | --no-cleanup] spine.md output.pdf
+
+	Stitch PDF files together
+
+	positional arguments:
+	  spine.md              Input markdown file
+	  output.pdf            Output PDF file
+
+	optional arguments:
+	  -h, --help            show this help message and exit
+	  --version             show program's version number and exit
+	  -v, --verbose         log more things
+	  --cleanup, --no-cleanup
+	                        Delete temporary files (default: True)
+
 Given this input::
 
 	existing_bookmarks: flatten
