@@ -97,7 +97,8 @@ class Stitcher:
             self.bookmarks.append(b)
 
     def _existingBookmarkConfig(self):
-        return self._getAttribute('existing_bookmarks')
+        EXISTING_BOOKMARKS_DEFAULT = 'remove'
+        return self._getAttribute('existing_bookmarks', EXISTING_BOOKMARKS_DEFAULT)
 
     def _removeExistingBookmarks(self):
         return (self._existingBookmarkConfig() == 'remove')

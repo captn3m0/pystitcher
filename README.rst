@@ -49,6 +49,16 @@ And the correct metadata::
 
 Configuration options can be specified with Meta data at the top of the file. These include:
 
+======    ======
+Option    Notes
+======    ======
+fit       Default fit of the bookmark. Can be overwritten per bookmark. See `Wiki <https://github.com/captn3m0/pystitcher/wiki/Zoom-Levels>`_ for more details.
+author 	  PDF Author
+keywords  PDF Keywords
+subject   PDF Subject
+title     PDF Title. If left unspecified, first Heading (h1) in the document is used.
+existing_bookmarks    What to do with existing bookmarks in individual files. Options are ``keep``, ``flatten``, and ``remove``. See `Wiki <https://github.com/captn3m0/pystitcher/wiki/Existing-Bookmarks>`_ for more details.
+
 .. _pyscaffold-notes:
 
 Note
