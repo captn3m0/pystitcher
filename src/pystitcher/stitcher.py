@@ -17,7 +17,7 @@ class Stitcher:
         self.currentPage = 1
         self.title = None
         self.bookmarks = []
-        self.currentLevel = None
+        self.currentLevel = 0
         self.oldBookmarks = []
         self.dir = os.path.dirname(os.path.abspath(inputBuffer.name))
         # Fit complete page width by default
