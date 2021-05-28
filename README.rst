@@ -47,22 +47,26 @@ And the correct metadata::
 	Creator:        pystitcher/0.0.1
 	Producer:       pystitcher/0.0.1
 
-Configuration options can be specified with Meta data at the top of the file. These include:
+Configuration options can be specified with Meta data at the top of the file.
 
-======    ======
-Option    Notes
-======    ======
-fit       Default fit of the bookmark. Can be overwritten per bookmark. See `Wiki <https://github.com/captn3m0/pystitcher/wiki/Zoom-Levels>`_ for more details.
-author 	  PDF Author
-keywords  PDF Keywords
-subject   PDF Subject
-title     PDF Title. If left unspecified, first Heading (h1) in the document is used.
-existing_bookmarks    What to do with existing bookmarks in individual files. Options are ``keep``, ``flatten``, and ``remove``. See `Wiki <https://github.com/captn3m0/pystitcher/wiki/Existing-Bookmarks>`_ for more details.
-
-.. _pyscaffold-notes:
-
-Note
-====
-
-This project has been set up using PyScaffold 4.0.2. For details and usage
-information on PyScaffold see https://pyscaffold.org/.
++---------------------+--------------------------------------------------------------------------+
+| Option              | Notes                                                                    |
++=====================+==========================================================================+
+| fit                 | Default fit of the bookmark. Can be overwritten per bookmark             |
+|                     | See `Wiki <https://github.com/captn3m0/pystitcher/wiki/Zoom-Levels>`_    |
+|                     | for more details.                                                        |
++---------------------+--------------------------------------------------------------------------+
+| author              | PDF Author                                                               |
++---------------------+--------------------------------------------------------------------------+
+| keywords            | PDF Keywords                                                             |
++---------------------+--------------------------------------------------------------------------+
+| subject             | PDF Subject                                                              |
++---------------------+--------------------------------------------------------------------------+
+| title               | PDF Title. If left unspecified, first Heading (h1)                       |
+|                     | in the document is used.                                                 |
++---------------------+--------------------------------------------------------------------------+
+| existing_bookmarks  | What to do with existing bookmarks in individual files.                  |
+|                     | Options are ``keep``, ``flatten``, and ``remove``. See                   |
+|                     | `Wiki <https://github.com/captn3m0/pystitcher/wiki/Existing-Bookmarks>`_ |
+|                     | for more details.                                                        |
++---------------------+--------------------------------------------------------------------------+
