@@ -11,7 +11,7 @@ Description
 
 Given this input::
 
-
+	existing_bookmarks: flatten
 	# A Complete Guide to the Personal Data Protection Bill
 
 	- [Cover](cover.pdf)
@@ -34,6 +34,10 @@ Given this input::
 Will generate a PDF with proper bookmarks:
 
 .. image:: https://i.imgur.com/qPVpZGt.png
+
+Configuration options can be specified with Meta data at the top of the file. These include:
+
+
 
 .. _pyscaffold-notes:
 
