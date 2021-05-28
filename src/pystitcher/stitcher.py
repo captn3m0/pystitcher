@@ -3,6 +3,7 @@ import markdown
 from .bookmark import Bookmark
 import html5lib
 from PyPDF3 import PdfFileWriter, PdfFileReader
+from PyPDF3.generic import FloatObject
 from pystitcher import __version__
 import tempfile
 import logging
@@ -19,6 +20,9 @@ class Stitcher:
         self.currentLevel = None
         self.oldBookmarks = []
         self.dir = os.path.dirname(os.path.abspath(inputBuffer.name))
+        # Fit complete page width by default
+        DEFAULT_FIT = '/FitV'
+
         # TODO: This is a hack
         os.chdir(self.dir)
 
@@ -26,6 +30,7 @@ class Stitcher:
         md = markdown.Markdown(extensions=['attr_list', 'meta'])
         html = md.convert(text)
         self.attributes = md.Meta
+        self.defaultFit = self._getAttribute('fit', DEFAULT_FIT)
 
         document = html5lib.parseFragment(html, namespaceHTMLElements=False)
         for e in document.iter():
@@ -43,8 +48,8 @@ class Stitcher:
     """
     Return an attribute with a default value of None
     """
-    def _getAttribute(self, key):
-        return self.attributes.get(key, [None])[0]
+    def _getAttribute(self, key, default=None):
+        return self.attributes.get(key, [default])[0]
 
     def _getMetadata(self):
         meta = {'/Producer': "pystitcher/%s" % __version__, '/Creator': "pystitcher/%s" % __version__}
@@ -61,23 +66,31 @@ class Stitcher:
 
         return meta
 
+    """
+    Iterate through the elements in the spine HTML
+    and generate self.bookmarks + self.files
+    """
     def iter(self, element):
         tag = element.tag
         b = None
         if(tag=='h1'):
             if (self.title == None):
                 self.title = element.text
-            b = Bookmark(self.currentPage, element.text, 1)
+            fit = element.attrib.get('fit', self.defaultFit)
+            b = Bookmark(self.currentPage, element.text, 1, fit)
             self.currentLevel = 1
         elif(tag=='h2'):
-            b = Bookmark(self.currentPage, element.text, 2)
+            fit = element.attrib.get('fit', self.defaultFit)
+            b = Bookmark(self.currentPage, element.text, 2, fit)
             self.currentLevel = 2
         elif(tag =='h3'):
-            b = Bookmark(self.currentPage, element.text, 3)
+            fit = element.attrib.get('fit', self.defaultFit)
+            b = Bookmark(self.currentPage, element.text, 3, fit)
             self.currentLevel = 3
         elif(tag =='a'):
             file = element.attrib.get('href')
-            b = Bookmark(self.currentPage, element.text, self.currentLevel+1)
+            fit = element.attrib.get('fit', self.defaultFit)
+            b = Bookmark(self.currentPage, element.text, self.currentLevel+1, fit)
             self.files.append((file, self.currentPage))
             self.currentPage += self._get_pdf_number_of_pages(file)
         if b:
@@ -109,7 +122,7 @@ class Stitcher:
                 else:
                     increment = b.level
                 level = outer_level + increment - 1
-                bookmarks.append(Bookmark(b.page+1, b.title, level))
+                bookmarks.append(Bookmark(b.page+1, b.title, level, b.fit))
 
         bookmarks.sort()
         self.bookmarks = bookmarks
@@ -139,7 +152,7 @@ class Stitcher:
         else:
             localPageNumber = pdf.getDestinationPageNumber(bookmarks)
             globalPageNumber = startPage + localPageNumber - 1
-            b = Bookmark(globalPageNumber, bookmarks.title, level)
+            b = Bookmark(globalPageNumber, bookmarks.title, level, self.defaultFit)
             self.oldBookmarks.append(b)
 
     """
@@ -147,7 +160,7 @@ class Stitcher:
     Ref: https://stackoverflow.com/a/18867646
     # TODO: Interleave this into the merge method somehow
     """
-    def _update_metadata(self, old_filename, outputFilename):
+    def _insert_bookmarks(self, old_filename, outputFilename):
         stack = []
         pdfInput = PdfFileReader(open(old_filename, 'rb'))
         pdfOutput = PdfFileWriter()
@@ -159,11 +172,9 @@ class Stitcher:
                 stack.pop()
             # If stack has something, use it
             if (len(stack) > 0):
-                existingRef = stack[len(stack) - 1]
-                stack.append((b, pdfOutput.addBookmark(b.title, b.page - 1, existingRef[1])))
-            # Else, push to top
-            else:
-                stack.append((b, pdfOutput.addBookmark(b.title, b.page - 1)))
+                existingRef = stack[len(stack) - 1][1]
+            bookmargArgs = [b.title, b.page-1, existingRef, None, False, False, b.fit] + b.cords
+            stack.append((b, pdfOutput.addBookmark(*bookmargArgs)))
         pdfOutput.addMetadata(self._getMetadata())
         pdfOutput.write(open(outputFilename, 'wb'))
 
@@ -194,7 +205,7 @@ class Stitcher:
         # Only read the additional bookmarks if we're not removing them
         if (not self._removeExistingBookmarks()):
             self._add_existing_bookmarks()
-        self._update_metadata(tempPdf.name, outputFilename)
+        self._insert_bookmarks(tempPdf.name, outputFilename)
 
         if (cleanup):
             _logger.info("Deleting temporary files")
