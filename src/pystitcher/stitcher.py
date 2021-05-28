@@ -96,7 +96,7 @@ class Stitcher:
                     outer_level = self._get_level_from_page_number(b.page+1)
                     # _logger.info("Got Level: %s", outer_level)
                     if (self._flattenBookmarks()):
-                        increment = 1
+                        increment = 2
                     else:
                         increment = b.level
                     level = outer_level + increment - 1
