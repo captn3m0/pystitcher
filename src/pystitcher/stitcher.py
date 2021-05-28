@@ -3,6 +3,7 @@ import markdown
 from .bookmark import Bookmark
 import html5lib
 from PyPDF2 import PdfFileWriter, PdfFileReader
+from pystitcher import __version__
 import tempfile
 import logging
 
@@ -30,14 +31,35 @@ class Stitcher:
         for e in document.iter():
             self.iter(e)
 
+    """
+    Get the number of pages in a PDF file
+    """
     def _get_pdf_number_of_pages(self, filename):
         assert os.path.isfile(filename) and os.access(filename, os.R_OK), \
                 "File {} doesn't exist or isn't readable".format(filename)
         pdf_reader = PdfFileReader(open(filename, "rb"))
         return pdf_reader.numPages
 
+    """
+    Return an attribute with a default value of None
+    """
     def _getAttribute(self, key):
         return self.attributes.get(key, [None])[0]
+
+    def _getMetadata(self):
+        meta = {'/Producer': "pystitcher/%s" % __version__, '/Creator': "pystitcher/%s" % __version__}
+        if (self._getAttribute('author')):
+            meta["/Author"] = self._getAttribute('author')
+        if (self._getAttribute('title')):
+            meta["/Title"] = self._getAttribute('title')
+        elif self.title:
+            meta["/Title"] = self.title
+        if (self._getAttribute('subject')):
+            meta["/Subject"] = self._getAttribute('subject')
+        if (self._getAttribute('keywords')):
+            meta["/Keywords"] = self._getAttribute('keywords')
+
+        return meta
 
     def iter(self, element):
         tag = element.tag
@@ -57,7 +79,6 @@ class Stitcher:
             file = element.attrib.get('href')
             b = Bookmark(self.currentPage, element.text, self.currentLevel+1)
             self.files.append((file, self.currentPage))
-            # _logger.info("File: %s starts at %s", file, self.currentLevel)
             self.currentPage += self._get_pdf_number_of_pages(file)
         if b:
             self.bookmarks.append(b)
@@ -143,6 +164,7 @@ class Stitcher:
             # Else, push to top
             else:
                 stack.append((b, pdfOutput.addBookmark(b.title, b.page - 1)))
+        pdfOutput.addMetadata(self._getMetadata())
         pdfOutput.write(open(outputFilename, 'wb'))
 
     """
@@ -170,14 +192,13 @@ class Stitcher:
         tempPdf = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
         self._merge(tempPdf)
         # Only read the additional bookmarks if we're not removing them
-        if (not self._removeExistingBookmarks())
+        if (not self._removeExistingBookmarks()):
             self._add_existing_bookmarks()
         self._update_metadata(tempPdf.name, outputFilename)
 
         if (cleanup):
             _logger.info("Deleting temporary files")
-            os.remove(tempMetadataFile.name)
             os.remove(tempPdf.name)
         else:
             # Why print? Because this is not logging, this is output
-            print("Temporary files saved as ", tempPdf.name, tempMetadataFile.name)
+            print("Temporary PDF file saved as ", tempPdf.name)
