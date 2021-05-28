@@ -44,8 +44,8 @@ And the correct metadata::
 	Subject:        Personal Data Protection Bill
 	Keywords:       privacy, surveillance, personal data protection
 	Author:         Medianama
-	Creator:        pystitcher/0.0.1
-	Producer:       pystitcher/0.0.1
+	Creator:        pystitcher/1.0.0
+	Producer:       pystitcher/1.0.0
 
 Configuration options can be specified with Meta data at the top of the file.
 
@@ -53,7 +53,7 @@ Configuration options can be specified with Meta data at the top of the file.
 | Option              | Notes                                                                    |
 +=====================+==========================================================================+
 | fit                 | Default fit of the bookmark. Can be overwritten per bookmark             |
-|                     | See `Wiki <https://github.com/captn3m0/pystitcher/wiki/Zoom-Levels>`_    |
+|                     | See `wiki <https://github.com/captn3m0/pystitcher/wiki/Zoom-Levels>`_    |
 |                     | for more details.                                                        |
 +---------------------+--------------------------------------------------------------------------+
 | author              | PDF Author                                                               |
@@ -67,6 +67,6 @@ Configuration options can be specified with Meta data at the top of the file.
 +---------------------+--------------------------------------------------------------------------+
 | existing_bookmarks  | What to do with existing bookmarks in individual files.                  |
 |                     | Options are ``keep``, ``flatten``, and ``remove``. See                   |
-|                     | `Wiki <https://github.com/captn3m0/pystitcher/wiki/Existing-Bookmarks>`_ |
+|                     | `docs <https://github.com/captn3m0/pystitcher/wiki/Existing-Bookmarks>`_ |
 |                     | for more details.                                                        |
 +---------------------+--------------------------------------------------------------------------+
