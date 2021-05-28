@@ -27,7 +27,7 @@ pystitcher is a command line tool, with very few cli options::
 
 Given this input::
 
-	existing_bookmarks: flatten
+	existing_bookmarks: remove
 	title: Complete Guide to the Personal Data Protection Bill
 	author: Medianama
 	keywords: privacy, surveillance, personal data protection
