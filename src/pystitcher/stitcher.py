@@ -22,6 +22,8 @@ class Stitcher:
         self.dir = os.path.dirname(os.path.abspath(inputBuffer.name))
         # Fit complete page width by default
         DEFAULT_FIT = '/FitV'
+        # Do not rotate by default
+        DEFAULT_ROTATE = 0
 
         # TODO: This is a hack
         os.chdir(self.dir)
@@ -31,6 +33,7 @@ class Stitcher:
         html = md.convert(text)
         self.attributes = md.Meta
         self.defaultFit = self._getAttribute('fit', DEFAULT_FIT)
+        self.defaultRotate = self._getAttribute('rotate', DEFAULT_ROTATE)
 
         document = html5lib.parseFragment(html, namespaceHTMLElements=False)
         for e in document.iter():
@@ -89,9 +92,10 @@ class Stitcher:
             self.currentLevel = 3
         elif(tag =='a'):
             file = element.attrib.get('href')
+            rotate = element.attrib.get('rotate', self.defaultRotate)
             fit = element.attrib.get('fit', self.defaultFit)
             b = Bookmark(self.currentPage, element.text, self.currentLevel+1, fit)
-            self.files.append((file, self.currentPage))
+            self.files.append((file, self.currentPage, rotate))
             self.currentPage += self._get_pdf_number_of_pages(file)
         if b:
             self.bookmarks.append(b)
@@ -107,7 +111,7 @@ class Stitcher:
         return (self._existingBookmarkConfig() == 'flatten')
 
     """
-    Adds the existing bookmarks into the 
+    Adds the existing bookmarks into the
     self.bookmarks list
     """
     def _add_existing_bookmarks(self):
@@ -186,14 +190,14 @@ class Stitcher:
     """
     def _merge(self, output):
         writer = PdfFileWriter()
-        for (inputFile,startPage) in self.files:
+        for (inputFile,startPage,rotate) in self.files:
             assert os.path.isfile(inputFile), ERROR_PATH.format(inputFile)
             reader = PdfFileReader(open(inputFile, 'rb'))
             # Recursively iterate through the old bookmarks
             self._iterate_old_bookmarks(reader, startPage, reader.getOutlines())
             for page in range(1, reader.getNumPages()+1):
-                writer.addPage(reader.getPage(page - 1))
-    
+                writer.addPage(reader.getPage(page - 1).rotateClockwise(int(rotate)))
+
         writer.write(output)
         output.close()
 
