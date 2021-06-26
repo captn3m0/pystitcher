@@ -24,6 +24,10 @@ class Stitcher:
         DEFAULT_FIT = '/FitV'
         # Do not rotate by default
         DEFAULT_ROTATE = 0
+        # Start at page 1 by default
+        DEFAULT_START = 1
+        # End at the final page by default
+        DEFAULT_END = None
 
         # TODO: This is a hack
         os.chdir(self.dir)
@@ -34,6 +38,8 @@ class Stitcher:
         self.attributes = md.Meta
         self.defaultFit = self._getAttribute('fit', DEFAULT_FIT)
         self.defaultRotate = self._getAttribute('rotate', DEFAULT_ROTATE)
+        self.defaultStart = self._getAttribute('start', DEFAULT_START)
+        self.defaultEnd = self._getAttribute('end', DEFAULT_END)
 
         document = html5lib.parseFragment(html, namespaceHTMLElements=False)
         for e in document.iter():
@@ -92,11 +98,14 @@ class Stitcher:
             self.currentLevel = 3
         elif(tag =='a'):
             file = element.attrib.get('href')
-            rotate = element.attrib.get('rotate', self.defaultRotate)
             fit = element.attrib.get('fit', self.defaultFit)
+            rotate = int(element.attrib.get('rotate', self.defaultRotate))
+            start = int(element.attrib.get('start', self.defaultStart))
+            end = int(element.attrib.get('end', self._get_pdf_number_of_pages(file) if self.defaultEnd is None else self.defaultEnd))
+            filters = (rotate, start, end)
             b = Bookmark(self.currentPage, element.text, self.currentLevel+1, fit)
-            self.files.append((file, self.currentPage, rotate))
-            self.currentPage += self._get_pdf_number_of_pages(file)
+            self.files.append((file, self.currentPage, filters))
+            self.currentPage += (end - start) + 1
         if b:
             self.bookmarks.append(b)
 
@@ -133,7 +142,7 @@ class Stitcher:
         self.bookmarks = bookmarks
 
     """
-    Gets the last bookmkark level at a given page number
+    Gets the last bookmark level at a given page number
     on the combined PDF
     """
     def _get_level_from_page_number(self, page):
@@ -190,13 +199,14 @@ class Stitcher:
     """
     def _merge(self, output):
         writer = PdfFileWriter()
-        for (inputFile,startPage,rotate) in self.files:
+        for (inputFile,startPage,filters) in self.files:
             assert os.path.isfile(inputFile), ERROR_PATH.format(inputFile)
             reader = PdfFileReader(open(inputFile, 'rb'))
             # Recursively iterate through the old bookmarks
             self._iterate_old_bookmarks(reader, startPage, reader.getOutlines())
-            for page in range(1, reader.getNumPages()+1):
-                writer.addPage(reader.getPage(page - 1).rotateClockwise(int(rotate)))
+            rotate, start, end = filters
+            for page in range(start, end + 1):
+                writer.addPage(reader.getPage(page - 1).rotateClockwise(rotate))
 
         writer.write(output)
         output.close()
