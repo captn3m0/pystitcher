@@ -26,8 +26,8 @@ class Stitcher:
         DEFAULT_ROTATE = 0
         # Start at page 1 by default
         DEFAULT_START = 1
-        # End at 0 pages before the final page by default
-        DEFAULT_END = 0
+        # End at the final page by default
+        DEFAULT_END = None
 
         # TODO: This is a hack
         os.chdir(self.dir)
@@ -101,7 +101,7 @@ class Stitcher:
             fit = element.attrib.get('fit', self.defaultFit)
             rotate = int(element.attrib.get('rotate', self.defaultRotate))
             start = int(element.attrib.get('start', self.defaultStart))
-            end = int(element.attrib.get('end', self._get_pdf_number_of_pages(file) - self.defaultEnd))
+            end = int(element.attrib.get('end', self._get_pdf_number_of_pages(file) if self.defaultEnd is None else self.defaultEnd))
             filters = (rotate, start, end)
             b = Bookmark(self.currentPage, element.text, self.currentLevel+1, fit)
             self.files.append((file, self.currentPage, filters))
