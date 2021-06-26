@@ -100,13 +100,13 @@ And the below attribute will merge only pages 2 to 5, both inclusive, from the s
 
 The list of available attributes are:
 
-List of attributes:
-
 +---------------------+-----------------------------------------------+
 | Attribute           | Notes                                         |
 +=====================+===============================================+
 | rotate              | Rotate the PDF. Valid values are 90, 180, 270 |
++---------------------+-----------------------------------------------+
 | start               | Start page number for PDF page selection      |
++---------------------+-----------------------------------------------+
 | end                 | End page number for PDF page selection        |
 +---------------------+-----------------------------------------------+
 
