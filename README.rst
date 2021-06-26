@@ -100,3 +100,8 @@ The above will rotate the second PDF file by 90 degrees clockwise before merging
 +=====================+=============================================+
 | rotate              | Rotate the PDF. Valid values are 90,180,270 |
 +---------------------+---------------------------------------------+
+
+Documentation
+=============
+
+Additional documentation is maintained on the `project wiki <https://github.com/captn3m0/pystitcher/wiki>`_ on GitHub.
