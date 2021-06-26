@@ -88,18 +88,27 @@ Configuration options can be specified with Meta data at the top of the file.
 |                     | for more details.                                                        |
 +---------------------+--------------------------------------------------------------------------+
 
-Additionally, PDF links specified in markdown can have attributes to alter the PDFs before merging::
+Additionally, PDF links specified in markdown can have attributes to alter the PDFs before merging. The below attribute will rotate the second PDF file by 90 degrees clockwise before merging::
 
 	[Part 1](1.pdf)
 	[Part 2](2.pdf){: rotate="90"}
 
-The above will rotate the second PDF file by 90 degrees clockwise before merging. List of attributes:
+And the below attribute will merge only pages 2 to 5, both inclusive, from the second PDF file::
 
-+---------------------+---------------------------------------------+
-| Attribute           | Notes                                       |
-+=====================+=============================================+
-| rotate              | Rotate the PDF. Valid values are 90,180,270 |
-+---------------------+---------------------------------------------+
+	[Part 1](1.pdf)
+	[Part 2](2.pdf){: start=2 end=5}
+
+The list of available attributes are:
+
+List of attributes:
+
++---------------------+-----------------------------------------------+
+| Attribute           | Notes                                         |
++=====================+===============================================+
+| rotate              | Rotate the PDF. Valid values are 90, 180, 270 |
+| start               | Start page number for PDF page selection      |
+| end                 | End page number for PDF page selection        |
++---------------------+-----------------------------------------------+
 
 Documentation
 =============
