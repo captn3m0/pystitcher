@@ -87,3 +87,16 @@ Configuration options can be specified with Meta data at the top of the file.
 |                     | `docs <https://github.com/captn3m0/pystitcher/wiki/Existing-Bookmarks>`_ |
 |                     | for more details.                                                        |
 +---------------------+--------------------------------------------------------------------------+
+
+Additionally, PDF links specified in markdown can have attributes to alter the PDFs before merging::
+
+	[Part 1](1.pdf)
+	[Part 2](2.pdf){: rotate="90"}
+
+The above will rotate the second PDF file by 90 degrees clockwise before merging. List of attributes:
+
++---------------------+---------------------------------------------+
+| Attribute           | Notes                                       |
++=====================+=============================================+
+| rotate              | Rotate the PDF. Valid values are 90,180,270 |
++---------------------+---------------------------------------------+
