@@ -1,12 +1,17 @@
 import os
-import markdown
-from .bookmark import Bookmark
+import logging
+import shutil
+import tempfile
+import urllib.request
+import validators
+
 import html5lib
+import markdown
+
 from PyPDF3 import PdfFileWriter, PdfFileReader
 from PyPDF3.generic import FloatObject
 from pystitcher import __version__
-import tempfile
-import logging
+from .bookmark import Bookmark
 
 _logger = logging.getLogger(__name__)
 
@@ -44,6 +49,20 @@ class Stitcher:
         document = html5lib.parseFragment(html, namespaceHTMLElements=False)
         for e in document.iter():
             self.iter(e)
+
+    """
+    Check if file has been cached locally and if
+    not cached, download from provided URL. Return
+    download filename
+    """
+    def _cacheURL(self, url):
+        if not os.path.exists(os.path.basename(url)):
+            _logger.info("Downloading PDF from remote URL %s", url)
+            with urllib.request.urlopen(url) as response, open(os.path.basename(url), 'wb') as downloadedFile:
+                shutil.copyfileobj(response, downloadedFile)
+        else:
+            _logger.info("Locally cached PDF found at %s", url)
+        return os.path.basename(url)
 
     """
     Get the number of pages in a PDF file
@@ -98,10 +117,13 @@ class Stitcher:
             self.currentLevel = 3
         elif(tag =='a'):
             file = element.attrib.get('href')
+            if(validators.url(file)):
+                file = self._cacheURL(file)
             fit = element.attrib.get('fit', self.defaultFit)
             rotate = int(element.attrib.get('rotate', self.defaultRotate))
             start = int(element.attrib.get('start', self.defaultStart))
-            end = int(element.attrib.get('end', self._get_pdf_number_of_pages(file) if self.defaultEnd is None else self.defaultEnd))
+            end = int(element.attrib.get('end', self._get_pdf_number_of_pages(file)
+                                         if self.defaultEnd is None else self.defaultEnd))
             filters = (rotate, start, end)
             b = Bookmark(self.currentPage, element.text, self.currentLevel+1, fit)
             self.files.append((file, self.currentPage, filters))
