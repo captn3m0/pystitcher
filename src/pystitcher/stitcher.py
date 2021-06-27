@@ -61,7 +61,7 @@ class Stitcher:
             with urllib.request.urlopen(url) as response, open(os.path.basename(url), 'wb') as downloadedFile:
                 shutil.copyfileobj(response, downloadedFile)
         else:
-            _logger.info("Locally cached PDF found at %s", url)
+            _logger.info("Locally cached PDF found at %s", os.path.basename(url))
         return os.path.basename(url)
 
     """
