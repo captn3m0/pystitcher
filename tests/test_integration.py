@@ -7,11 +7,11 @@ from itertools import chain
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../"
 
 TEST_DATA = [
-    ("clean",6, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Volume 2', 3, 0), ('Part 2', 3, 1)]),
-    ("keep",6, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Chapter 1', 0, 2), ('Chapter 2', 1, 2), ('Scene 1', 1, 3), ('Scene 2', 2, 3), ('Volume 2', 3, 0), ('Part 3', 3, 1), ('Chapter 3', 3, 2), ('Chapter 4', 4, 2), ('Scene 3', 4, 3), ('Scene 4', 5, 3)]),
-    ("flatten", 6, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Chapter 1', 0, 2), ('Chapter 2', 1, 2), ('Scene 1', 1, 2), ('Scene 2', 2, 2), ('Volume 2', 3, 0), ('Part 3', 3, 1), ('Chapter 3', 3, 2), ('Chapter 4', 4, 2), ('Scene 3', 4, 2), ('Scene 4', 5, 2)]),
-    ("rotate", 9, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Volume 2', 3, 0), ('Part 2', 3, 1), ('Volume 3', 6, 0), ('Part 3', 6, 1)]),
-    ("min",3, [('Part 1', 0, 0), ('Chapter 1', 0, 1), ('Chapter 2', 1, 1), ('Scene 1', 1, 2), ('Scene 2', 2, 2)])
+    ("clean",6, {'Author': 'Wiki, the Cat', 'Title': 'Super Potato Book', 'Subject': 'A book about adventures of Wiki, the cat.', 'Keywords': 'wiki,potato,jelly'}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Volume 2', 3, 0), ('Part 2', 3, 1)]),
+    ("keep",6, {'Title': 'Super Potato Book'}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Chapter 1', 0, 2), ('Chapter 2', 1, 2), ('Scene 1', 1, 3), ('Scene 2', 2, 3), ('Volume 2', 3, 0), ('Part 3', 3, 1), ('Chapter 3', 3, 2), ('Chapter 4', 4, 2), ('Scene 3', 4, 3), ('Scene 4', 5, 3)]),
+    ("flatten", 6, {}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Chapter 1', 0, 2), ('Chapter 2', 1, 2), ('Scene 1', 1, 2), ('Scene 2', 2, 2), ('Volume 2', 3, 0), ('Part 3', 3, 1), ('Chapter 3', 3, 2), ('Chapter 4', 4, 2), ('Scene 3', 4, 2), ('Scene 4', 5, 2)]),
+    ("rotate", 9, {}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Volume 2', 3, 0), ('Part 2', 3, 1), ('Volume 3', 6, 0), ('Part 3', 6, 1)]),
+    ("min",3, {}, [('Part 1', 0, 0), ('Chapter 1', 0, 1), ('Chapter 2', 1, 1), ('Scene 1', 1, 2), ('Scene 2', 2, 2)])
 ]
 
 def pdf_name(name):
@@ -41,10 +41,14 @@ def get_all_bookmarks(pdf):
     bookmarks = flatten_bookmarks(pdf.getOutlines())
     return [(d[0]['/Title'], pdf.getDestinationPageNumber(d[0]), d[1]) for d in bookmarks]
 
-@pytest.mark.parametrize("name,pages,bookmarks", TEST_DATA)
-def test_book(name, pages, bookmarks):
+@pytest.mark.parametrize("name,pages,metadata, bookmarks", TEST_DATA)
+def test_book(name, pages, metadata, bookmarks):
     output_file = render(name)
     pdf = PyPDF3.PdfFileReader(output_file)
     assert pages == pdf.getNumPages()
     assert bookmarks == get_all_bookmarks(pdf)
-    
+    info = pdf.getDocumentInfo()
+    assert 'pystitcher/1.0.1' == info['/Producer']
+    assert 'pystitcher/1.0.1' == info['/Creator']
+    for key in metadata:
+        assert info["/%s" % key] == metadata[key]
