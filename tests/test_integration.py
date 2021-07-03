@@ -2,6 +2,7 @@ import pytest
 import os
 import PyPDF3
 from pystitcher.stitcher import Stitcher
+from pystitcher import __version__
 from itertools import chain
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../"
@@ -23,7 +24,7 @@ TEST_DATA = [
     ("flatten", 6, {}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Chapter 1', 0, 2), ('Chapter 2', 1, 2), ('Scene 1', 1, 2), ('Scene 2', 2, 2), ('Volume 2', 3, 0), ('Part 3', 3, 1), ('Chapter 3', 3, 2), ('Chapter 4', 4, 2), ('Scene 3', 4, 2), ('Scene 4', 5, 2)]),
     ("rotate", 9, {}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Volume 2', 3, 0), ('Part 2', 3, 1), ('Volume 3', 6, 0), ('Part 3', 6, 1)]),
     ("min",3, {}, [('Part 1', 0, 0), ('Chapter 1', 0, 1), ('Chapter 2', 1, 1), ('Scene 1', 1, 2), ('Scene 2', 2, 2)]),
-    ("page-select", 12, {}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Chapter 1', 0, 2), ('Chapter 2', 1, 2), ('Scene 1', 1, 3), ('Scene 2', 2, 3), ('Volume 2', 3, 0), ('Part 2', 3, 1), ('Chapter 3', 3, 2), ('Chapter 4', 4, 2), ('Scene 3', 4, 3), ('Scene 4', 5, 3), ('Volume 3', 6, 0), ('Part 3', 6, 1), ('Chapter 1', 6, 2), ('Chapter 2', 7, 2), ('Scene 1', 7, 3), ('Scene 2', 8, 3), ('Volume 4', 9, 0), ('Part 4', 9, 1), ('Chapter 3', 9, 2), ('Chapter 4', 10, 2), ('Scene 3', 10, 3), ('Scene 4', 11, 3)])
+    ("page-select", 9, {}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Chapter 1', 0, 2), ('Chapter 2', 1, 2), ('Scene 1', 1, 3), ('Volume 2', 2, 0), ('Part 2', 2, 1), ('Scene 2', 2, 2), ('Chapter 3', 2, 2), ('Chapter 4', 3, 2), ('Scene 3', 3, 3), ('Volume 3', 4, 0), ('Part 3', 4, 1), ('Scene 4', 4, 2), ('Chapter 1', 4, 2), ('Chapter 2', 5, 2), ('Scene 1', 5, 3), ('Volume 4', 6, 0), ('Part 4', 6, 1), ('Scene 2', 6, 2), ('Chapter 3', 6, 2), ('Chapter 4', 7, 2), ('Scene 3', 7, 3), ('Scene 4', 8, 3)])
 ]
 
 def pdf_name(name):
@@ -53,21 +54,23 @@ def get_all_bookmarks(pdf):
     bookmarks = flatten_bookmarks(pdf.getOutlines())
     return [(d[0]['/Title'], pdf.getDestinationPageNumber(d[0]), d[1]) for d in bookmarks]
 
-@pytest.mark.parametrize("name, pages, metadata, bookmarks", TEST_DATA)
+@pytest.mark.parametrize("name,pages,metadata,bookmarks", TEST_DATA)
 def test_book(name, pages, metadata, bookmarks):
     output_file = render(name)
     pdf = PyPDF3.PdfFileReader(output_file)
     assert pages == pdf.getNumPages()
     assert bookmarks == get_all_bookmarks(pdf)
     info = pdf.getDocumentInfo()
-    assert 'pystitcher/1.0.1' == info['/Producer']
-    assert 'pystitcher/1.0.1' == info['/Creator']
+    identity = "pystitcher/%s" % __version__
+    assert identity == info['/Producer']
+    assert identity == info['/Creator']
     for key in metadata:
         assert info["/%s" % key] == metadata[key]
 
 def test_rotation():
     """ Validates the book-rotate.pdf with pages rotated."""
-    pdf = PyPDF3.PdfFileReader("tests/book-rotate.pdf")
+    output_file = render("rotate")
+    pdf = PyPDF3.PdfFileReader(output_file)
     # Note that inputs to getPage are 0-indexed
     assert 90 == pdf.getPage(3)['/Rotate']
     assert 90 == pdf.getPage(4)['/Rotate']
