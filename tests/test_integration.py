@@ -52,3 +52,14 @@ def test_book(name, pages, metadata, bookmarks):
     assert 'pystitcher/1.0.1' == info['/Creator']
     for key in metadata:
         assert info["/%s" % key] == metadata[key]
+
+def test_rotation():
+    """ Validates the book-rotate.pdf with pages rotated."""
+    pdf = PyPDF3.PdfFileReader("tests/book-rotate.pdf")
+    # Note that inputs to getPage are 0-indexed
+    assert 90 == pdf.getPage(3)['/Rotate']
+    assert 90 == pdf.getPage(4)['/Rotate']
+    assert 90 == pdf.getPage(5)['/Rotate']
+    assert 180 == pdf.getPage(6)['/Rotate']
+    assert 180 == pdf.getPage(7)['/Rotate']
+    assert 180 == pdf.getPage(8)['/Rotate']
