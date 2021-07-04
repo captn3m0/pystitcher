@@ -1,9 +1,12 @@
-import pytest
 import os
+import io
+
 import PyPDF3
 from pystitcher.stitcher import Stitcher
 from pystitcher import __version__
-from itertools import chain
+
+import pytest
+from contextlib import redirect_stdout
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../"
 
@@ -31,11 +34,11 @@ TEST_DATA = [
 def pdf_name(name):
     return "tests/%s.pdf" % name
 
-def render(name):
+def render(name, cleanup=True):
     input_file = open("tests/book-%s.md" % name, 'r')
     output_file = "%s.pdf" % name
     stitcher = Stitcher(input_file)
-    stitcher.generate(output_file, True)
+    stitcher.generate(output_file, cleanup)
     # Switch back to main directory
     os.chdir(ROOT_DIR)
     return pdf_name(name)
@@ -79,3 +82,15 @@ def test_rotation():
     assert 180 == pdf.getPage(6)['/Rotate']
     assert 180 == pdf.getPage(7)['/Rotate']
     assert 180 == pdf.getPage(8)['/Rotate']
+
+def test_cleanup_disabled():
+    f = io.StringIO()
+    with redirect_stdout(f):
+        output_file = render("min", False)
+    temp_filename = f.getvalue()[29:-1]
+    assert os.path.exists(temp_filename)
+    pdf = PyPDF3.PdfFileReader(temp_filename)
+    assert 3 == pdf.getNumPages()
+    assert [] == pdf.getOutlines()
+    # Clean it up manually to avoid cluttering
+    os.remove(temp_filename)
