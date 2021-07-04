@@ -19,7 +19,7 @@ Fixtures for the integration tests. Each test is a tuple consisting of 4 things:
 Each of the above 4 is passed to test_book as an argument
 """
 TEST_DATA = [
-    ("clean",6, {'Author': 'Wiki, the Cat', 'Title': 'Super Potato Book', 'Subject': 'A book about adventures of Wiki, the cat.', 'Keywords': 'wiki,potato,jelly'}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Volume 2', 3, 0), ('Part 2', 3, 1)]),
+    ("clean",6, {'Author': 'Wiki, the Cat', 'Title': 'Super Jelly Book', 'Subject': 'A book about adventures of Wiki, the cat.', 'Keywords': 'wiki,potato,jelly'}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Volume 2', 3, 0), ('Part 2', 3, 1)]),
     ("keep",6, {'Title': 'Super Potato Book'}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Chapter 1', 0, 2), ('Chapter 2', 1, 2), ('Scene 1', 1, 3), ('Scene 2', 2, 3), ('Volume 2', 3, 0), ('Part 3', 3, 1), ('Chapter 3', 3, 2), ('Chapter 4', 4, 2), ('Scene 3', 4, 3), ('Scene 4', 5, 3)]),
     ("flatten", 6, {}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Chapter 1', 0, 2), ('Chapter 2', 1, 2), ('Scene 1', 1, 2), ('Scene 2', 2, 2), ('Volume 2', 3, 0), ('Part 3', 3, 1), ('Chapter 3', 3, 2), ('Chapter 4', 4, 2), ('Scene 3', 4, 2), ('Scene 4', 5, 2)]),
     ("rotate", 9, {}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Volume 2', 3, 0), ('Part 2', 3, 1), ('Volume 3', 6, 0), ('Part 3', 6, 1)]),

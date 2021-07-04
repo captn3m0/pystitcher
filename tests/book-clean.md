@@ -1,5 +1,6 @@
 existing_bookmarks: remove
 author: Wiki, the Cat
+title: Super Jelly Book
 subject: A book about adventures of Wiki, the cat.
 keywords: wiki,potato,jelly
 # Super Potato Book
