@@ -24,7 +24,8 @@ TEST_DATA = [
     ("flatten", 6, {}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Chapter 1', 0, 2), ('Chapter 2', 1, 2), ('Scene 1', 1, 2), ('Scene 2', 2, 2), ('Volume 2', 3, 0), ('Part 3', 3, 1), ('Chapter 3', 3, 2), ('Chapter 4', 4, 2), ('Scene 3', 4, 2), ('Scene 4', 5, 2)]),
     ("rotate", 9, {}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Volume 2', 3, 0), ('Part 2', 3, 1), ('Volume 3', 6, 0), ('Part 3', 6, 1)]),
     ("min",3, {}, [('Part 1', 0, 0), ('Chapter 1', 0, 1), ('Chapter 2', 1, 1), ('Scene 1', 1, 2), ('Scene 2', 2, 2)]),
-    ("page-select", 9, {}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Chapter 1', 0, 2), ('Chapter 2', 1, 2), ('Scene 1', 1, 3), ('Volume 2', 2, 0), ('Part 2', 2, 1), ('Scene 2', 2, 2), ('Chapter 3', 2, 2), ('Chapter 4', 3, 2), ('Scene 3', 3, 3), ('Volume 3', 4, 0), ('Part 3', 4, 1), ('Scene 4', 4, 2), ('Chapter 1', 4, 2), ('Chapter 2', 5, 2), ('Scene 1', 5, 3), ('Volume 4', 6, 0), ('Part 4', 6, 1), ('Scene 2', 6, 2), ('Chapter 3', 6, 2), ('Chapter 4', 7, 2), ('Scene 3', 7, 3), ('Scene 4', 8, 3)])
+    ("page-select", 9, {}, [('Super Potato Book', 0, 0), ('Volume 1', 0, 0), ('Part 1', 0, 1), ('Chapter 1', 0, 2), ('Chapter 2', 1, 2), ('Scene 1', 1, 3), ('Volume 2', 2, 0), ('Part 2', 2, 1), ('Scene 2', 2, 2), ('Chapter 3', 2, 2), ('Chapter 4', 3, 2), ('Scene 3', 3, 3), ('Volume 3', 4, 0), ('Part 3', 4, 1), ('Scene 4', 4, 2), ('Chapter 1', 4, 2), ('Chapter 2', 5, 2), ('Scene 1', 5, 3), ('Volume 4', 6, 0), ('Part 4', 6, 1), ('Scene 2', 6, 2), ('Chapter 3', 6, 2), ('Chapter 4', 7, 2), ('Scene 3', 7, 3), ('Scene 4', 8, 3)]),
+    ("headings", 9, {'Title': 'Heading 1'}, [('Heading 1', 0, 0), ('Part 1', 0, 1), ('Heading 2', 3, 1), ('Part 2', 3, 2), ('Heading 3', 6, 2), ('Part 3', 6, 3)])
 ]
 
 def pdf_name(name):
