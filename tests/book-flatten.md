@@ -1,5 +1,4 @@
 existing_bookmarks: flatten
-title: Super Jelly Book
 
 # Super Potato Book
 
