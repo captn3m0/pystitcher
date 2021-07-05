@@ -38,8 +38,8 @@ Given this input::
 
 	# The Bills
 
-	- [Personal Data Protection Bill, 2019](1.a.pdf)
-	- [Personal Data Protection Bill, 2018](1.b.pdf)
+	- [Personal Data Protection Bill, 2019](https://example.com/2019-bill.pdf)
+	- [Personal Data Protection Bill, 2018](https://example.com/2018-bill.pdf)
 
 	# Other key reading material
 
