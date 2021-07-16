@@ -52,9 +52,10 @@ def parse_args(args):
     )
 
     parser.add_argument(
-        '--cleanup',
-        action=argparse.BooleanOptionalAction,
+        '--no-cleanup',
+        action='store_false',
         default=True,
+        dest='cleanup',
         help="Delete temporary files"
     )
 

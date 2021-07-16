@@ -11,5 +11,5 @@ def test_loglevel():
     assert args.loglevel == logging.INFO
 
 def test_cleanup():
-    args = parse_args(['--cleanup', 'tests/book-clean.md', 'o.pdf'])
-    assert args.cleanup == True
+    args = parse_args(['--no-cleanup', 'tests/book-clean.md', 'o.pdf'])
+    assert args.cleanup == False

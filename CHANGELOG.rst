@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 1.0.3
+=============
+- Added tests and code coverage
+- PDFs can be directly fetched from Remote URLs
+- PDFs can be filtered to have start and end pages
+- Support for Python 3.6-3.8
+- Removed --cleanup argument, since that is default
+
 Version 1.0.2
 =============
 - Adds support for rotating PDFs
