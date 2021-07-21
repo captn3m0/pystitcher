@@ -4,6 +4,15 @@ pystitcher
 
 pystitcher stitches your PDF files together, generating nice customizable bookmarks for you using a declarative input in the form of a markdown file. It is written in pure python and uses `PyPDF3 <https://pypi.org/project/PyPDF3/>`_ for reading and writing PDF files.
 
+Installation
+============
+
+You can install it easily using `pipx <https://pypa.github.io/pipx/>`_::
+
+	pipx install pystitcher
+	
+The Wiki has `Alternative Installation Instructions <https://github.com/captn3m0/pystitcher/wiki/Installation>`_.
+
 
 Description
 ===========
