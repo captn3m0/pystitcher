@@ -2,6 +2,24 @@
 pystitcher
 ==========
 
+.. image:: https://img.shields.io/pypi/v/pystitcher
+    :target: https://pypi.org/project/pystitcher/
+    :alt: PyPI Version
+
+.. image:: https://img.shields.io/pypi/l/pystitcher
+    :target: LICENSE.txt
+    :alt: Repository License
+
+.. image:: https://img.shields.io/github/checks-status/captn3m0/pystitcher/main
+    :target: https://github.com/captn3m0/pystitcher/actions?query=branch%3Amain
+    :alt: GitHub branch checks status
+
+.. image:: https://img.shields.io/codecov/c/gh/captn3m0/pystitcher
+    :target: https://app.codecov.io/gh/captn3m0/pystitcher/
+    :alt: Codecov
+
+|
+
 pystitcher stitches your PDF files together, generating nice customizable bookmarks for you using a declarative input in the form of a markdown file. It is written in pure python and uses `PyPDF3 <https://pypi.org/project/PyPDF3/>`_ for reading and writing PDF files.
 
 Installation
