@@ -1,7 +1,7 @@
 import os
 import io
 
-import PyPDF3
+import pypdf
 from pystitcher.stitcher import Stitcher
 from pystitcher import __version__
 
@@ -55,16 +55,16 @@ def flatten_bookmarks(bookmarks, level=0):
 
 def get_all_bookmarks(pdf):
     """ Returns a list of all bookmarks with title, page number, and level in a PDF file"""
-    bookmarks = flatten_bookmarks(pdf.getOutlines())
-    return [(d[0]['/Title'], pdf.getDestinationPageNumber(d[0]), d[1]) for d in bookmarks]
+    bookmarks = flatten_bookmarks(pdf.outline)
+    return [(d[0]['/Title'], pdf.get_destination_page_number(d[0]), d[1]) for d in bookmarks]
 
 @pytest.mark.parametrize("name,pages,metadata,bookmarks", TEST_DATA)
 def test_book(name, pages, metadata, bookmarks):
     output_file = render(name)
-    pdf = PyPDF3.PdfFileReader(output_file)
-    assert pages == pdf.getNumPages()
+    pdf = pypdf.PdfReader(output_file)
+    assert pages == pdf.get_num_pages()
     assert bookmarks == get_all_bookmarks(pdf)
-    info = pdf.getDocumentInfo()
+    info = pdf.metadata
     identity = "pystitcher/%s" % __version__
     assert identity == info['/Producer']
     assert identity == info['/Creator']
@@ -74,14 +74,14 @@ def test_book(name, pages, metadata, bookmarks):
 def test_rotation():
     """ Validates the book-rotate.pdf with pages rotated."""
     output_file = render("rotate")
-    pdf = PyPDF3.PdfFileReader(output_file)
+    pdf = pypdf.PdfReader(output_file)
     # Note that inputs to getPage are 0-indexed
-    assert 90 == pdf.getPage(3)['/Rotate']
-    assert 90 == pdf.getPage(4)['/Rotate']
-    assert 90 == pdf.getPage(5)['/Rotate']
-    assert 180 == pdf.getPage(6)['/Rotate']
-    assert 180 == pdf.getPage(7)['/Rotate']
-    assert 180 == pdf.getPage(8)['/Rotate']
+    assert 90 == pdf.get_page(3)['/Rotate']
+    assert 90 == pdf.get_page(4)['/Rotate']
+    assert 90 == pdf.get_page(5)['/Rotate']
+    assert 180 == pdf.get_page(6)['/Rotate']
+    assert 180 == pdf.get_page(7)['/Rotate']
+    assert 180 == pdf.get_page(8)['/Rotate']
 
 def test_cleanup_disabled():
     f = io.StringIO()
@@ -89,8 +89,8 @@ def test_cleanup_disabled():
         output_file = render("min", False)
     temp_filename = f.getvalue()[29:-1]
     assert os.path.exists(temp_filename)
-    pdf = PyPDF3.PdfFileReader(temp_filename)
-    assert 3 == pdf.getNumPages()
-    assert [] == pdf.getOutlines()
+    pdf = pypdf.PdfReader(temp_filename)
+    assert 3 == pdf.get_num_pages()
+    assert [] == pdf.outline
     # Clean it up manually to avoid cluttering
     os.remove(temp_filename)

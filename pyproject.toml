@@ -20,7 +20,7 @@ dependencies = [
     "html5lib>=1.1",
     "importlib-metadata; python_version<\"3.8\"",
     "Markdown>=3.6",
-    "PyPDF3>=1.0.6",
+    "pypdf>=4.3.1",
     "validators>=0.33.0",
 ]
 

@@ -8,8 +8,8 @@ import validators
 import html5lib
 import markdown
 
-from PyPDF3 import PdfFileWriter, PdfFileReader
-from PyPDF3.generic import FloatObject
+from pypdf import PdfWriter, PdfReader
+from pypdf.generic import Fit
 from pystitcher import __version__
 from .bookmark import Bookmark
 
@@ -70,8 +70,8 @@ class Stitcher:
     def _get_pdf_number_of_pages(self, filename):
         assert os.path.isfile(filename) and os.access(filename, os.R_OK), \
                 "File {} doesn't exist or isn't readable".format(filename)
-        pdf_reader = PdfFileReader(open(filename, "rb"))
-        return pdf_reader.numPages
+        pdf_reader = PdfReader(open(filename, "rb"))
+        return pdf_reader.get_num_pages()
 
     """
     Return an attribute with a default value of None
@@ -186,7 +186,7 @@ class Stitcher:
             for inner_bookmark in bookmarks:
                 self._iterate_old_bookmarks(pdf, startPage, inner_bookmark, level+1)
         else:
-            localPageNumber = pdf.getDestinationPageNumber(bookmarks)
+            localPageNumber = pdf.get_destination_page_number(bookmarks)
             globalPageNumber = startPage + localPageNumber - 1
             b = Bookmark(globalPageNumber, bookmarks.title, level, self.defaultFit)
             self.oldBookmarks.append(b)
@@ -198,9 +198,9 @@ class Stitcher:
     """
     def _insert_bookmarks(self, old_filename, outputFilename):
         stack = []
-        pdfInput = PdfFileReader(open(old_filename, 'rb'))
-        pdfOutput = PdfFileWriter()
-        pdfOutput.cloneDocumentFromReader(pdfInput)
+        pdfInput = PdfReader(open(old_filename, 'rb'))
+        pdfOutput = PdfWriter()
+        pdfOutput.clone_document_from_reader(pdfInput)
         for b in self.bookmarks:
             existingRef = None
             # Trim the stack till the top is useful (stack.level < b.level)
@@ -209,9 +209,9 @@ class Stitcher:
             # If stack has something, use it
             if (len(stack) > 0):
                 existingRef = stack[len(stack) - 1][1]
-            bookmargArgs = [b.title, b.page-1, existingRef, None, False, False, b.fit] + b.cords
-            stack.append((b, pdfOutput.addBookmark(*bookmargArgs)))
-        pdfOutput.addMetadata(self._getMetadata())
+            bookmargArgs = [b.title, b.page-1, existingRef, None, False, False, Fit(b.fit)] + b.cords
+            stack.append((b, pdfOutput.add_outline_item(*bookmargArgs)))
+        pdfOutput.add_metadata(self._getMetadata())
         pdfOutput.write(open(outputFilename, 'wb'))
 
     """
@@ -220,15 +220,15 @@ class Stitcher:
     as we're reading them
     """
     def _merge(self, output):
-        writer = PdfFileWriter()
+        writer = PdfWriter()
         for (inputFile,startPage,filters) in self.files:
             assert os.path.isfile(inputFile), ERROR_PATH.format(inputFile)
-            reader = PdfFileReader(open(inputFile, 'rb'))
+            reader = PdfReader(open(inputFile, 'rb'))
             # Recursively iterate through the old bookmarks
-            self._iterate_old_bookmarks(reader, startPage, reader.getOutlines())
+            self._iterate_old_bookmarks(reader, startPage, reader.outline)
             rotate, start, end = filters
             for page in range(start, end + 1):
-                writer.addPage(reader.getPage(page - 1).rotateClockwise(rotate))
+                writer.add_page(reader.get_page(page - 1).rotate(rotate))
 
         writer.write(output)
         output.close()
