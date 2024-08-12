@@ -1,8 +1,55 @@
 [build-system]
-# AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
-requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling","hatch-vcs"]
+build-backend = "hatchling.build"
 
-[tool.setuptools_scm]
-# See configuration details in https://github.com/pypa/setuptools_scm
-version_scheme = "no-guess-dev"
+[project]
+name = "pystitcher"
+dynamic = ["version"]
+description = "Stitch together a PDF file from multiple sources in a declarative manner"
+readme = {file = "README.md", content-type = "text/markdown"}
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    { name = "Nemo", email = "python@captnemo.in" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+]
+dependencies = [
+    "html5lib>=1.1",
+    "importlib-metadata; python_version<\"3.8\"",
+    "Markdown>=3.6",
+    "PyPDF3>=1.0.6",
+    "validators>=0.33.0",
+]
+
+[project.optional-dependencies]
+testing = [
+    "pytest",
+    "pytest-cov",
+    "setuptools",
+]
+
+[project.scripts]
+pystitcher = "pystitcher.skeleton:run"
+
+[project.urls]
+Changelog = "https://github.com/captn3m0/pystitcher/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/captn3m0/pystitcher/wiki"
+Homepage = "https://github.com/captn3m0/pystitcher"
+Source = "https://github.com/captn3m0/pystitcher"
+Tracker = "https://github.com/captn3m0/pystitcher/issues"
+
+[tool.hatch.version]
+source = "vcs"
+[tool.hatch.build.hooks.vcs]
+version-file = "src/pystitcher/_version.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+]
+
+[tool.hatch.envs.default]
+installer = "uv"
