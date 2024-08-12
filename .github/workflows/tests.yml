@@ -2,6 +2,9 @@ name: Run Tests
 on: push
 jobs:
   python:
+    permissions:
+      id-token: write
+      contents: read
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -20,10 +23,10 @@ jobs:
           pip install -e .[testing]
       - name: Run pytest
         run: |
-          pytest --cache-clear --cov=./ --cov-report=xml --cov-report=html
+          pytest --cache-clear --cov=src/ --cov-report=xml --cov-report=html
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4.5.0
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           files: ./coverage.xml
           env_vars: RUNNER_OS,PYTHON_VERSION,CI,GITHUB_SHA,RUNNER_OS,GITHUB_RUN_ID
