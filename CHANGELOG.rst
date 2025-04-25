@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.0.5
+=============
+- Dependency upgrades
+- Python 3.13 is now supported
+
 Version 1.0.4
 =============
 - Switched from `html5` to `html5lib` as a dependency, since the former is unmaintained
